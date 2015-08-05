@@ -1,0 +1,21 @@
+doctype html
+html
+    head
+        title Testing Page
+        link(rel='stylesheet', href='/css/style.min.css')
+    body
+        h1 Testing Time
+        form#register
+            input#usernameRegister(type="text", placeholder="Username")
+            input#passwordRegister(type="text", placeholder="Password")
+            input#confirmRegister(type="text", placeholder="Confirm")
+            button#submitRegister Submit
+        form#login
+            input#usernameLogin(type="text", placeholder="Username")
+            input#passwordLogin(type="text", placeholder="Password")
+            button#submitLogin Submit
+        form#getUsername
+            input#usernameGet(type="text")
+            button#getUsername Get Username
+        script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js' )
+        script(src="js/test.min.js")
