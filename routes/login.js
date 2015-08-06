@@ -8,25 +8,47 @@ var User = mongoose.model('User');
 router.post(
     '/',
     function(req, res, next) {
-        passport.authenticate('local', function (err, user, info) {
-            var report = {success: false};
-            if (err) {
-                throw new Error(err);
-            }
-            if (!user) {
-                res.send(report);
-            } else {
-                req.logIn(user, function (err) {
-                    if (err) {
-                        console.error('login error:', err);
-                    } else {
-                        report.success = true;
-                    }
+        var username = req.body.username;
+        var password = req.body.password;
+        console.log(req.body);
+        console.log(password);
+        var report = {
+            usernameIsInvalid: false,
+            passwordIsInvalid: false,
+            success: false
+        };
+        //There must be a username and it can only have letters and numbers
+        if (!username || username.match(/[^\w\d]/g)) {
+            report.usernameIsInvalid = true;
+        }
+        //There must be a password and it can't have any scary characters
+        if (!password || password.match(/[:/\\\.><';,"\)\(\-\+]/g)) {
+            report.passwordIsInvalid = true;
+        }
+        if (!report.usernameIsInvalid && !report.passwordIsInvalid) {
+            passport.authenticate('local', function (err, user, info) {
+                if (err) {
+                    throw new Error(err);
+                }
+                if (!user) {
+                    report.noUserFound = true;
                     res.send(report);
-                });
-            }
+                } else {
+                    req.logIn(user, function (err) {
+                        if (err) {
+                            console.error('login error:', err);
+                        } else {
+                            report.success = true;
+                        }
+                        res.send(report);
+                    });
+                }
 
-        })(req, res, next);
+            })(req, res, next);
+        }
+        else {
+            res.send(report);
+        }
     }
 );
 
