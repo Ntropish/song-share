@@ -1,3 +1,4 @@
+/* globals console: false, module: false, require: false */
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
@@ -6,6 +7,7 @@ var User = mongoose.model('User');
 //Register new user route, validates info and saves user to database internally
 router.post('/',
     function(req, res) {
+        'use strict';
         var username = req.body.username;
         var password = req.body.password;
         var report = {

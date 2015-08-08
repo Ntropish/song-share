@@ -4,10 +4,10 @@
   "description": "An app for listening to music with friends",
   "main": "index.js",
   "scripts": {
-    "test": "node test",
+    "test": "node --harmony test",
     "mongod": "mongod --dbpath ./data",
     "start": "nodemon www.js",
-    "set-mongo": "set MONGOOSE_URI=mongodb://localhost/song-share && node www.js"
+    "set-mongo": "set MONGOOSE_URI=mongodb://localhost/song-share"
   },
   "keywords": [
     "song",
@@ -50,6 +50,7 @@
     "should": "^7.0.2",
     "superagent": "^1.3.0",
     "supertest": "^1.0.1",
+    "supertest-as-promised": "^2.0.2",
     "tape": "^4.0.3"
   },
   "author": "Justin Stone",

@@ -1,3 +1,4 @@
+/* globals console: false, module: false, require: false */
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
@@ -8,6 +9,8 @@ var User = mongoose.model('User');
 router.post(
     '/',
     function(req, res, next) {
+        'use strict';
+        res.setHeader('Content-Type', 'application/json');
         var username = req.body.username;
         var password = req.body.password;
         console.log(req.body);
@@ -56,6 +59,7 @@ router.post(
 router.get(
     '/',
     function (req, res) {
+        'use strict';
         var report = {success: false};
         if (req.isAuthenticated()) {
             report.success = true;
