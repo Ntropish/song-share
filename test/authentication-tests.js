@@ -1,6 +1,7 @@
 /* globals module: false, require: false, console: false */
 var test = require('tape');
 var request = require('supertest-as-promised');
+var friendTests = require('./friend-tests');
 
 module.exports = function (url) {
     'use strict';
@@ -75,6 +76,9 @@ module.exports = function (url) {
                 return loginGet(cat).then(function (res) {
                     t.equal(res.body.username, 'cat', 'name should be returned when logged in');
                 });
+            },
+            function () {
+                return friendTests.addCheckRemoveCheck(t, cat);
             },
             // Logout
             function () {

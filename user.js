@@ -1,3 +1,4 @@
+/* globals console: false, module: false, require: false, process: false */
 var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;
 var mongoose = require('mongoose');
@@ -30,10 +31,12 @@ db.once('open',function () {
 
 var userSchema = mongoose.Schema({
     username: { type: String, required: true, index: { unique: true }},
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    friends: [{ type : mongoose.Schema.ObjectId, ref: 'User'}]
 });
 
 userSchema.pre('save', function(next) {
+    'use strict';
     var user = this;
     //Check if the password changed and return otherwise so it isn't hashed twice
     if (!user.isModified('password')) {
@@ -65,14 +68,25 @@ userSchema.methods.verifyPassword = function (passwordToCheck, cb) {
     });
 };
 
+userSchema.methods.addFriend = function(newFriend) {
+    'use strict';
+    // Add a friend to this' friend list from a document or id string
+    var id = typeof newFriend === 'string'? newFriend : newFriend._id;
+    this.friends.push(id);
+    return this.save();
+};
+
+userSchema.methods.removeFriend = function(friendNoMore) {
+    'use strict';
+    // Remove a friend from this' friend list based on a document or id string
+    var id = typeof friendNoMore === 'string'? friendNoMore : friendNoMore._id;
+    var index = this.friends.indexOf(id);
+    this.friends.splice(index, index+1);
+    return this.save();
+};
+
 
 // Use the user schema to create the User model
 var User = mongoose.model('User', userSchema);
 
-
-/*
-User.findUserByUsername = function(username, cb) {
-    User.findOne({'username': username}, cb);
-};
-*/
 module.exports = User;
