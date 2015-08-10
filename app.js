@@ -37,6 +37,7 @@ var register = require('./routes/register');
 var login = require('./routes/login');
 var logout = require('./routes/logout');
 var index = require('./routes/index');
+var friend = require('./routes/friend');
 
 // Apply routes
 
@@ -44,6 +45,7 @@ app.use('/',         index);
 app.use('/register', register);
 app.use('/login',    login);
 app.use('/logout',   logout);
+app.use('/friend',   friend);
 
 
 // Set public directory to serve static

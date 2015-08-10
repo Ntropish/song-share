@@ -47,6 +47,7 @@ router.post('/',
 
 //Deletes current logged in user
 router.delete('/', function(req, res){
+    'use strict';
     var report = {
         success: false
     };
@@ -54,10 +55,10 @@ router.delete('/', function(req, res){
         res.send(report);
         return false;
     }
-    User.findOne({username: req.passport.session.user}, function (err, user) {
+    User.findOne({username: req.user.username}, function (err, user) {
         if (err) {
             report.databaseError = true;
-        } else if (use) {
+        } else if (user) {
             req.logOut();
             user.delete();
             report.success = true;

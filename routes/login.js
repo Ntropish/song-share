@@ -13,8 +13,6 @@ router.post(
         res.setHeader('Content-Type', 'application/json');
         var username = req.body.username;
         var password = req.body.password;
-        console.log(req.body);
-        console.log(password);
         var report = {
             usernameIsInvalid: false,
             passwordIsInvalid: false,
@@ -63,7 +61,7 @@ router.get(
         var report = {success: false};
         if (req.isAuthenticated()) {
             report.success = true;
-            report.username = req.session.passport.user;
+            report.username = req.user.username;
             User.findOne({username: report.username}, function (err, user) {
                 if (err) {
                     console.error('database error:', err);

@@ -72,8 +72,11 @@ userSchema.methods.addFriend = function(newFriend) {
     'use strict';
     // Add a friend to this' friend list from a document or id string
     var id = typeof newFriend === 'string'? newFriend : newFriend._id;
-    this.friends.push(id);
-    return this.save();
+    if (this.friends.indexOf(id) === -1) {
+        this.friends.push(id);
+        return this.save();
+    }
+    return Promise.reject('friend already exists in friend list');
 };
 
 userSchema.methods.removeFriend = function(friendNoMore) {
