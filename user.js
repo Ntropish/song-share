@@ -70,32 +70,30 @@ userSchema.methods.verifyPassword = function (passwordToCheck, cb) {
 
 userSchema.methods.addFriend = function(newFriend) {
     'use strict';
-    // Add a friend to this' friend list from a document or id string
-    var id = typeof newFriend === 'string'? newFriend : newFriend._id;
-    if (this.friends.indexOf(id) === -1) {
-        this.friends.push(id);
+    // Add a friend to this' friend list based on an ObjectId
+    if (this.friends.indexOf(newFriend) === -1) {
+        this.friends.push(newFriend);
         return this.save();
     }
-    return Promise.reject('friend already exists in friend list');
+    return Promise.resolve('friend already exists in friend list');
 };
 
 userSchema.methods.removeFriend = function(friendNoMore) {
     'use strict';
-    // Remove a friend from this' friend list based on a document or id string
-    var id = typeof friendNoMore === 'string'? friendNoMore : friendNoMore._id;
-    var index = this.friends.indexOf(id);
+    // Remove a friend from this' friend list based on an ObjectId
+    var index = this.friends.indexOf(friendNoMore);
     if (index !== -1) {
-        this.friends.splice(index, index+1);
+        this.friends.splice(index, 1);
         return this.save();
     }
-    return Promise.reject('user id not found in friend list');
+    return Promise.resolve('user id not found in friend list');
 
 };
 
 userSchema.statics.getIdFromUsername = function (username) {
     'use strict';
     // Returns a promise that fulfills with a user id
-    return this.find({username: username}).exec().then(function (user) {
+    return this.findOne({username: username}).exec().then(function (user) {
         return user._id;
     });
 };

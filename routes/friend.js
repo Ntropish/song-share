@@ -18,7 +18,7 @@ router.post('/',
 
         var getPotentialFriendId = function () {
             // Returns a promise that fulfills with a user id
-            return User.getIdFromUsername(req.body.potentialFriend).then(function (id) {
+            return User.getIdFromUsername(req.body.username).then(function (id) {
                 report.userExists = true;
                 return id;
             });
@@ -26,14 +26,13 @@ router.post('/',
 
         var addFriend = function (id) {
             // Returns a promise, MongoDB saving the new id to friend list
-            return req.session.passport.user.addFriend(id);
+            return req.user.addFriend(id);
         };
 
         var handleSave = function (result) {
             // Returns a promise that updates the report
-            return result.then(function () {
-                report.friendListSaved = true;
-            });
+            report.friendListSaved = true;
+            return result;
         };
 
         // Execute promises
@@ -52,6 +51,8 @@ router.post('/',
             },
             function (err) {
                 res.send(report);
+                console.error(err);
+                console.log(err.stack);
             });
 
     });
@@ -63,29 +64,38 @@ router.delete('/',
 
         var report = {
             success: false,
+            userExists: false,
             friendExists: false,
             friendListSaved: false
         };
 
         var getFriendNoMoreId = function() {
             // Return a promise that fulfills with a user's id
-            return User.getIdFromUsename(req.body.friendNoMore);
+            return User.getIdFromUsername(req.body.username).then(function (id) {
+                report.userExists = true;
+                return id;
+            });
         };
 
         var deleteFriend = function(userId) {
             // Returns a promise that fulfills with a MongoDB save promise or rejects if friend doesn't exist
-            return req.session.passport.user.deleteFriend(userId)
-                .then(null, function(err) {
+            return req.user.removeFriend(userId);
+            /*
+                .then(function(result){
+                    report.friendExists = true;
+                    //return result;
+                }, function(err) {
                     report.friendExists = false;
                     return err;
                 });
+                */
         };
 
         var handleSave = function(result) {
             // Returns a MongoDB save promise that updates the report on fulfill
-            return result.then(function(){
-                report.friendListSaved = true;
-            });
+            report.friendExists = true;
+            report.friendListSaved = true;
+            return result;
         };
 
         // Execute promises
@@ -104,6 +114,8 @@ router.delete('/',
             },
             function (err) {
                 res.send(report);
+                console.error(err);
+                console.log(err.stack);
             });
     });
 
@@ -111,27 +123,41 @@ router.get('/',
     function (req, res) {
         'use strict';
         // Get the authenticated user's friend list
-        //TODO: make this function
         var report = {
             success: false,
             isAuthenticated: req.isAuthenticated()
         };
-        var friends = [];
-
-        // Use populate to turn the user's friends property into array of usernames to return
-        // Promises not used here due to single callback
-        req.session.passport.user.populate('friends', 'username').exec(function(err, user) {
-            if (err) {
-                report.dbError = true;
-                res.send(report);
-            } else if (user) {
-                report.success = true;
-                report.friends = user.friends;
-                res.send(report);
-            }
-            else {
-                res.send(report);
-            }
-        });
+        if (req.isAuthenticated()) {
+            var friends = [];
+            // Use populate to turn the user's friends property into array of usernames to return
+            // Promises not used here due to single callback
+            User.findOne({username: req.user.username}).populate('friends', 'username').exec(function (err, user) {
+                if (err) {
+                    report.dbError = true;
+                    res.send(report);
+                    throw err;
+                } else if (user) {
+                    report.success = true;
+                    // Convert friends list from array of objects with username property to array of usernames
+                    report.friends = [];
+                    user.friends.forEach(function(element){
+                        if (element) {
+                            report.friends.push(element.username);
+                        } else {
+                            //TODO: Remove console.log
+                            console.log('FOUND NULL FRIEND');
+                        }
+                    });
+                    res.send(report);
+                }
+                else {
+                    res.send(report);
+                }
+            });
+        } else {
+            res.send(report);
+        }
 
     });
+
+module.exports = router;

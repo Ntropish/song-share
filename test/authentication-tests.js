@@ -104,7 +104,7 @@ module.exports = function (url) {
             }, Promise.resolve())
             // Sequence session promise handling:
             .then(function () {
-                t.error(undefined, 'session should complete without errors');
+                t.error(null, 'session should complete without errors');
                 t.end();
             },
             function (err) {
