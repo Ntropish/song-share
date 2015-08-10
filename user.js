@@ -81,10 +81,21 @@ userSchema.methods.removeFriend = function(friendNoMore) {
     // Remove a friend from this' friend list based on a document or id string
     var id = typeof friendNoMore === 'string'? friendNoMore : friendNoMore._id;
     var index = this.friends.indexOf(id);
-    this.friends.splice(index, index+1);
-    return this.save();
+    if (index !== -1) {
+        this.friends.splice(index, index+1);
+        return this.save();
+    }
+    return Promise.reject('user id not found in friend list');
+
 };
 
+userSchema.statics.getIdFromUsername = function (username) {
+    'use strict';
+    // Returns a promise that fulfills with a user id
+    return this.find({username: username}).exec().then(function (user) {
+        return user._id;
+    });
+};
 
 // Use the user schema to create the User model
 var User = mongoose.model('User', userSchema);

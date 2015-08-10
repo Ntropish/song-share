@@ -1,3 +1,4 @@
+/* globals console: false, require: false, process: false, module: false */
 var express = require('express');
 var async = require('async');
 var path = require('path');
@@ -54,6 +55,7 @@ app.set('view engine', 'jade');
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
+    'use strict';
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
@@ -62,6 +64,7 @@ app.use(function (req, res, next) {
 // will print stacktrace
 if (app.get('env') === 'development') {
     app.use(function (err, req, res, next) {
+        'use strict';
         res.status(err.status || 500);
         res.render('error', {
             message: err.message,
@@ -73,6 +76,7 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user1
 app.use(function (err, req, res, next) {
+    'use strict';
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,
