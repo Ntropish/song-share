@@ -1,4 +1,7 @@
+/* globals $: false, console: false, io: false */
 $(document).ready(function(){
+    'use strict';
+    var socket = io.connect('http://localhost:8686/session');
     $('#submitRegister').on('click', function(event){
         event.preventDefault();
         var username = $('#usernameRegister').val();
@@ -62,5 +65,10 @@ $(document).ready(function(){
             }
 
         );
+    });
+    $('#connectToSocket').on('click', function(event){
+        event.preventDefault();
+
+
     });
 });
