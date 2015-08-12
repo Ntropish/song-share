@@ -1,7 +1,7 @@
 /* globals $: false, console: false, io: false */
 $(document).ready(function(){
     'use strict';
-    var socket = io.connect('http://localhost:8686/session');
+    var socket = io.connect('http://localhost:8686/playlist-session');
     $('#submitRegister').on('click', function(event){
         event.preventDefault();
         var username = $('#usernameRegister').val();

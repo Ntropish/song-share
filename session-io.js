@@ -5,7 +5,7 @@ var User = mongoose.model('User');
 module.exports = function(io){
     'use strict';
 
-    var sessionNSP = io.of('session');
+    var sessionNSP = io.of('playlist-session');
 
     sessionNSP.on('connection', function(socket) {
         console.log(socket.request.user);

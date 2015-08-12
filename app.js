@@ -34,12 +34,7 @@ require('./passport-configure')(passport);
 
 var store = new MongoStore({ mongooseConnection: db });
 
-var sessionMiddleware = session({
-    resave: false,
-    saveUninitialized: false,
-    secret: 'silly dog',
-    store: store
-});
+
 
 // Apply middleware
 app.use(favicon(path.join(__dirname, 'resources', 'favicon.ico')));
@@ -47,34 +42,42 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
+var sessionMiddleware = session({
+    resave: false,
+    saveUninitialized: false,
+    secret: 'silly dog',
+    store: store
+});
 app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
 
 io.use(passportSocketIo.authorize(
     {
-        key: 'express.sid',
+        key: 'connect.sid',
         secret: 'silly dog',
-        store: store
+        store: store,
+        success: function(data, accept){
+            'use strict';
+            console.log('connected to socket.io');
+            accept();
+        },
+        fail: function(data, message, error, accept){
+            'use strict';
+            console.log('failed connection to socket.io:', message);
+            //console.log('data:',data);
+            if (error) {
+                accept(new Error(message));
+                throw new Error(message);
+            }
+
+
+        }
     }
 ));
-/*
-// Middleware to access request from socket
-io.use(function(socket, next) {
-    'use strict';
-    sessionMiddleware(socket.request, socket.request.res, next);
-});
-*/
 
 // Configure session namespace
-//require('./session-io')(io);
-
-io.of('session').on('connection', function(socket) {
-    'use strict';
-    // TODO: Access user info here
-    console.log(socket.request.user);
-});
-
+require('./session-io')(io);
 
 // Require routes
 var register = require('./routes/register');
