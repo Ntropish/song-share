@@ -37,7 +37,7 @@ gulp.task('html', function () {
 gulp.task('watch', ['css', 'js', 'html'], function () {
 
     gulp.watch('resources/sass/*.sass', ['css'] );
-    gulp.watch('resources/javascripts/*.js', ['js'] );
+    gulp.watch('resources/js/*.js', ['js'] );
     gulp.watch('resources/jade/*.jade', ['html'] );
 
 });
