@@ -1,7 +1,6 @@
 /* globals console: false, module: false, require: false, process: false */
 var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;
-var mongoose = require('mongoose');
 
 /*
     Connect to mongoose, set up error display
@@ -9,96 +8,85 @@ var mongoose = require('mongoose');
     Log a connection message once connected.
     This message should be removed eventually
  */
-mongoose.connect(process.env.MONGOOSE_URI);
-var db = mongoose.connection;
-
-//TODO: Remove logging messages
-db.on('error', console.error.bind(console, 'user connection error:'));
-db.once('open',function () {
+module.exports = function(mongoose) {
     'use strict';
-    console.log('user config connected to mongoose');
-});
+    /*
+     Define the user schema for the application
+     username The name the user will log in and be identified by to themselves and other users
+     password The string used to authenticate a user, gets hashed with bcrypt for security
 
-/*
-    Define the user schema for the application
-        username The name the user will log in and be identified by to themselves and other users
-        password The string used to authenticate a user, gets hashed with bcrypt for security
+     Hash passwords when saving a user
 
-    Hash passwords when saving a user
+     Add a method to verify passwords
+     */
 
-    Add a method to verify passwords
- */
+    var userSchema = mongoose.Schema({
+        username: {type: String, required: true, index: {unique: true}},
+        password: {type: String, required: true},
+        friends: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
+        session: mongoose.Schema.ObjectId,
+        volume: Number
+    });
 
-var userSchema = mongoose.Schema({
-    username: { type: String, required: true, index: { unique: true }},
-    password: { type: String, required: true },
-    friends: [{ type : mongoose.Schema.ObjectId, ref: 'User'}]
-});
-
-userSchema.pre('save', function(next) {
-    'use strict';
-    var user = this;
-    //Check if the password changed and return otherwise so it isn't hashed twice
-    if (!user.isModified('password')) {
-        return next();
-    }
-    //TODO: Switch to promises
-    bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
-        if (err) {
-            return next(err);
+    userSchema.pre('save', function (next) {
+        var user = this;
+        //Check if the password changed and return otherwise so it isn't hashed twice
+        if (!user.isModified('password')) {
+            return next();
         }
-
-        bcrypt.hash(user.password, salt, function(err, hash) {
+        //TODO: Switch to promises
+        bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
             if (err) {
                 return next(err);
             }
-            user.password = hash;
-            next();
+
+            bcrypt.hash(user.password, salt, function (err, hash) {
+                if (err) {
+                    return next(err);
+                }
+                user.password = hash;
+                next();
+            });
         });
     });
-});
 
-userSchema.methods.verifyPassword = function (passwordToCheck, cb) {
-    'use strict';
-    bcrypt.compare(passwordToCheck, this.password, function(err, isMatch) {
-        if (err) {
-            return cb(err);
+    userSchema.methods.verifyPassword = function (passwordToCheck, cb) {
+        bcrypt.compare(passwordToCheck, this.password, function (err, isMatch) {
+            if (err) {
+                return cb(err);
+            }
+            cb(null, isMatch);
+        });
+    };
+
+    userSchema.methods.addFriend = function (newFriend) {
+        // Add a friend to this' friend list based on an ObjectId
+        if (this.friends.indexOf(newFriend) === -1) {
+            this.friends.push(newFriend);
+            return this.save();
         }
-        cb(null, isMatch);
-    });
-};
+        return Promise.resolve('friend already exists in friend list');
+    };
 
-userSchema.methods.addFriend = function(newFriend) {
-    'use strict';
-    // Add a friend to this' friend list based on an ObjectId
-    if (this.friends.indexOf(newFriend) === -1) {
-        this.friends.push(newFriend);
-        return this.save();
-    }
-    return Promise.resolve('friend already exists in friend list');
-};
+    userSchema.methods.removeFriend = function (friendNoMore) {
+        // Remove a friend from this' friend list based on an ObjectId
+        var index = this.friends.indexOf(friendNoMore);
+        if (index !== -1) {
+            this.friends.splice(index, 1);
+            return this.save();
+        }
+        return Promise.resolve('user id not found in friend list');
 
-userSchema.methods.removeFriend = function(friendNoMore) {
-    'use strict';
-    // Remove a friend from this' friend list based on an ObjectId
-    var index = this.friends.indexOf(friendNoMore);
-    if (index !== -1) {
-        this.friends.splice(index, 1);
-        return this.save();
-    }
-    return Promise.resolve('user id not found in friend list');
+    };
 
-};
-
-userSchema.statics.getIdFromUsername = function (username) {
-    'use strict';
-    // Returns a promise that fulfills with a user id
-    return this.findOne({username: username}).exec().then(function (user) {
-        return user._id;
-    });
-};
+    userSchema.statics.getIdFromUsername = function (username) {
+        // Returns a promise that fulfills with a user id
+        return this.findOne({username: username}).exec().then(function (user) {
+            return user._id;
+        });
+    };
 
 // Use the user schema to create the User model
-var User = mongoose.model('User', userSchema);
+    var User = mongoose.model('User', userSchema);
 
-module.exports = User;
+};
