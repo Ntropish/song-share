@@ -58,8 +58,13 @@ router.get(
     '/',
     function (req, res) {
         'use strict';
-        var report = {success: false};
+        var report = {
+            success: false,
+            isAuthenticated: false
+        };
+
         if (req.isAuthenticated()) {
+            report.isAuthenticated = true;
             report.success = true;
             report.username = req.user.username;
             User.findOne({username: report.username}, function (err, user) {
@@ -72,7 +77,6 @@ router.get(
                 res.send(report);
             });
         } else {
-            report.isNotAuthenticated = true;
             res.send(report);
         }
 
